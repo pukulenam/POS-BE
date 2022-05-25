@@ -15,15 +15,19 @@ class Products extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_store');
-            $table->foreign('id_store')->references('id')->on('stores');
+            $table->unsignedBigInteger('store_id');
+            $table->foreign('store_id')->references('id')->on('stores')->onDelete('cascade');
             $table->string('name');
             $table->text('description');
             $table->unsignedBigInteger('quantity');
             $table->unsignedFloat('price');
             $table->string('category');
-            $table->text('image');
+            $table->text('image')->nullable();
             $table->timestamps();
+        });
+
+        Schema::table('products', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 

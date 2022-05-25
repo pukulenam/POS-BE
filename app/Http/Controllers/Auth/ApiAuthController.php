@@ -11,7 +11,31 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiAuthController extends Controller
 {
-    public function login(Request $request) {
+    public function login_admin(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|max:255',
+            'password' => 'required|string|min:6'
+        ]);
+        if ($validator->fails())
+            return response(['errors' => $validator->errors()->all()], 422);
+
+        $admin = Admin::where('email', $request['email'])->first();
+        if ($admin) {
+            if (Hash::check($request->password, $admin->password)) {
+                $response['admin'] = $admin;
+                $response['token'] = $admin->createToken('Token')->plainTextToken;
+                return response($response, 200);
+            } else {
+                $response = ["message" => "Password mismatch"];
+                return response($response, 422);
+            }
+        } else {
+            $response = ["message" =>'User does not exist'];
+            return response($response, 422);
+        }
+    }
+
+    public function login_cashier(Request $request) {
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|max:255',
             'password' => 'required|string|min:6'

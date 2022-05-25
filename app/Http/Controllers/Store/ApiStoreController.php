@@ -10,27 +10,37 @@ use Illuminate\Support\Facades\Validator;
 class ApiStoreController extends Controller
 {
     public function getStoreByUserid($id) {
-        $store = Store::where('id_user', $id)->get();
+        if (auth()->user()->id != $id) {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        }
+        $store = Store::where('user_id', $id)->get();
 
         return response($store, 200);
     }
 
     public function getStoreByAdminid($id) {
-        $store = Store::where('id_admin', $id)->get();
+        if (auth()->user()->id != $id) {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        }
+        $store = Store::where('admin_id', $id)->get();
 
         return response($store, 200);
     }
 
     public function getStoreById($id) {
-        $store = Store::where('id', $id)->get();
+        $store = Store::where('id', $id)->first();
+
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        }
 
         return response($store, 200);
     }
 
     public function addStore(Request $request) {
         $validator = Validator::make($request->all(), [
-            'id_user' => 'required|integer|exists:users,id',
-            'id_admin' => 'required|integer|exists:users,id',
+            'user_id' => 'required|integer|exists:users,id',
+            'admin_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'address' => 'string|nullable',
@@ -43,7 +53,7 @@ class ApiStoreController extends Controller
             return response(['errors' => "You Are Not Authenticate"], 422);
         }
 
-        if (Store::where('id_admin', $request['id_admin'])->first() != NULL) {
+        if (Store::where('admin_id', $request['admin_id'])->first() != NULL) {
             return response(['errors' => "You Can Only Have 1 Store"], 422);
         }
 

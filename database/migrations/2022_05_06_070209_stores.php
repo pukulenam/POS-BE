@@ -15,15 +15,19 @@ class Stores extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_user');
-            $table->foreign('id_user')->references('id')->on('users');
-            $table->unsignedBigInteger('id_admin');
-            $table->foreign('id_admin')->references('id')->on('users');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('admin_id');
+            $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('name');
             $table->text('description');
             $table->text('address');
             $table->timestamps();
-        });    
+        });
+
+        Schema::table('stores', function (Blueprint $table) {
+            $table->softDeletes();
+        });
     }
 
     /**

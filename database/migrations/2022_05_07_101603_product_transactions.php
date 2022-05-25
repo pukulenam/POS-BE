@@ -13,17 +13,21 @@ class ProductTransactions extends Migration
      */
     public function up()
     {
-        Schema::create('productTransactions', function (Blueprint $table) {
+        Schema::create('product_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->unsignedBigInteger('transaction_id');
             $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('cascade');
-            $table->unsignedBigInteger('id_store');
-            $table->foreign('id_store')->references('id')->on('stores')->onDelete('cascade');
+            $table->unsignedBigInteger('store_id');
+            $table->foreign('store_id')->references('id')->on('stores')->onDelete('cascade');
             $table->unsignedFloat('total');
             $table->unsignedBigInteger('quantity');
             $table->timestamps();
+        });
+
+        Schema::table('product_transactions', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 
@@ -34,6 +38,6 @@ class ProductTransactions extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('productTransactions');
+        Schema::dropIfExists('product_transactions');
     }
 }

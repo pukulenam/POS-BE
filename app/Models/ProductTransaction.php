@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductTransaction extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -17,6 +19,7 @@ class ProductTransaction extends Model
     protected $fillable = [
         'product_id',
         'transaction_id',
+        'store_id',
         'total',
         'quantity'
     ];

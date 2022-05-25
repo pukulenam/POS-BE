@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Product extends Model
+class Admin extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
     use SoftDeletes;
 
     /**
@@ -17,13 +20,10 @@ class Product extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'store_id',
-        'name',
-        'description',
-        'quantity',
-        'price',
-        'category',
-        'image'
+        'full_name',
+        'username',
+        'email',
+        'password',
     ];
 
     /**
@@ -32,7 +32,7 @@ class Product extends Model
      * @var array<int, string>
      */
     protected $hidden = [
-
+        'password',
     ];
 
     /**

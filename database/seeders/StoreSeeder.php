@@ -16,8 +16,8 @@ class StoreSeeder extends Seeder
     {
         Store::insert([
             'id' => 1,
-            'id_user' => 1,
-            'id_admin' => 2,
+            'user_id' => 1,
+            'admin_id' => 1,
             'name' => 'tokobagus',
             'description' => 'Toko bagus sekarang jual mobil',
             'address' => 'Jln. Bagus Jual Mobil, Jakarta'

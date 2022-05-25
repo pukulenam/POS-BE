@@ -15,9 +15,15 @@ class Customers extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('store_id');
+            $table->foreign('store_id')->references('id')->on('stores')->onDelete('cascade');
             $table->string('full_name');
             $table->string('no_telp');
             $table->timestamps();
+        });
+
+        Schema::table('customers', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 

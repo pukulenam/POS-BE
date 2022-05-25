@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Store extends Model
 {
     use HasFactory;
+    use SoftDeletes;
     
     /**
      * The attributes that are mass assignable.
@@ -15,8 +17,8 @@ class Store extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'id_admin',
-        'id_user',
+        'admin_id',
+        'user_id',
         'name',
         'description',
         'address',
