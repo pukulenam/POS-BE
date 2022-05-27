@@ -14,7 +14,7 @@ class ApiTransactionController extends Controller
 {
     public function getTransactionById(Request $request, $id) {
         $validator = Validator::make(['id' => $id], [
-            'id' => 'exists:transactions'
+            'id' => 'exists:transactions',
         ]);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 422);
@@ -22,9 +22,14 @@ class ApiTransactionController extends Controller
 
         $trans = Transaction::where('id', $id)->first();
 
+        if (!$trans)
+            return response(['errors' => ['Transaction not found']], 422);
+
         $store = Store::where('id', $trans['store_id'])->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -41,11 +46,15 @@ class ApiTransactionController extends Controller
 
         $store = Store::where('id', $store_id)->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
-        $trans = Transaction::where('store_id', $store_id)->get();
+        $trans = Transaction::where('store_id', $store_id)->get();        
+        if (!$trans)
+            return response(['errors' => ['Transaction not found']], 422);
 
         return response($trans, 200);
     }
@@ -60,9 +69,14 @@ class ApiTransactionController extends Controller
 
         $trans = Transaction::where('cus_id', $cus_id)->get();
         
+        if (!$trans)
+            return response(['errors' => ['Transaction not found']], 422);
+
         $store = Store::where('id', $trans[0]['store_id'])->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -140,5 +154,33 @@ class ApiTransactionController extends Controller
         
         $transaction->save();
         return response(['transaction' => $transaction, 'product transactions' => $res['status']], 200);
+    }
+
+    public function deleteTransaction(Request $request) {
+        $validator = Validator::make($request->toArray(), [
+            'id' => 'required|integer|exists:transactions',
+        ]);
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
+        $trans = Transaction::where('id', $request['id'])->first();
+
+        if ($trans == NULL) 
+            return response(["message" => "Transaction not found"]);
+
+        $product_controller = (new ApiProductTransactionController);
+
+        $product_controller->deleteProductTransaction($trans);
+
+        $store = Store::where('id', $trans['store_id'])->first();
+
+        if (auth()->user()->id != $store['admin_id']) {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        }
+
+        $trans->delete();
+
+        return response(["deleted" => $trans], 200);
     }
 }

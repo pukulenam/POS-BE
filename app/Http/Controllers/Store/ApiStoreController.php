@@ -10,7 +10,14 @@ use Illuminate\Support\Facades\Validator;
 class ApiStoreController extends Controller
 {
     public function getStoreByUserid($id) {
-        if (auth()->user()->id != $id) {
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'integer|required|exists:users'
+        ]);
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
+        if (auth()->user()->id != $id && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
         $store = Store::where('user_id', $id)->get();
@@ -19,7 +26,14 @@ class ApiStoreController extends Controller
     }
 
     public function getStoreByAdminid($id) {
-        if (auth()->user()->id != $id) {
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'integer|required|exists:admins'
+        ]);
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
+        if (auth()->user()->id != $id && auth()->user()->role == 'admin') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
         $store = Store::where('admin_id', $id)->get();
@@ -28,9 +42,18 @@ class ApiStoreController extends Controller
     }
 
     public function getStoreById($id) {
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'integer|required|exists:stores'
+        ]);
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
         $store = Store::where('id', $id)->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -40,7 +63,7 @@ class ApiStoreController extends Controller
     public function addStore(Request $request) {
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
-            'admin_id' => 'required|integer|exists:users,id',
+            'admin_id' => 'required|integer|exists:admins,id',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'address' => 'string|nullable',
@@ -49,12 +72,12 @@ class ApiStoreController extends Controller
             return response(['errors' => $validator->errors()->all()], 422);
         }
 
-        if (auth()->user()->role != 'admin') {
-            return response(['errors' => "You Are Not Authenticate"], 422);
-        }
-
         if (Store::where('admin_id', $request['admin_id'])->first() != NULL) {
             return response(['errors' => "You Can Only Have 1 Store"], 422);
+        }
+
+        if (auth()->user()->id != $request['admin_id']) {
+            return response(['errors' => "You Are Not Authenticate"], 422);
         }
 
         $store = Store::create($request->toArray());
@@ -73,11 +96,11 @@ class ApiStoreController extends Controller
             return response(['errors' => $validator->errors()->all()], 422);
         }
 
-        if (auth()->user()->role != 'admin') {
-            return response(['errors' => "You Are Not Authenticate"], 422);
+        $store = Store::where('id', $request['id'])->first();
+        if (auth()->user()->id != $store['admin_id']) {
+            return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
-        $store = Store::where('id', $request['id'])->first();
         $store['name'] = $request['name'];
         $store['description'] = $request['description'];
         $store['address'] = $request['address'] ? $request['address'] : $store['address'];

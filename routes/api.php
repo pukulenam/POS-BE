@@ -53,6 +53,9 @@ Route::group(['middleware' => ['auth:sanctum', 'cors', 'json.response', 'is_admi
     Route::delete('/product', [ApiProductController::class, 'deleteProduct']);
     Route::put('/product', [ApiProductController::class, 'updateProduct']);
 
+    // Route::delete('producttransaction', [ApiProductTransactionController::class, 'deleteProductTransaction']);
+
     Route::post('/transaction', [ApiTransactionController::class, 'addTransaction']);
     Route::put('/transaction', [ApiTransactionController::class, 'updateTransaction']);
+    Route::delete('/transaction', [ApiTransactionController::class, 'deleteTransaction']);
 });

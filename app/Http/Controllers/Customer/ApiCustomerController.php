@@ -20,7 +20,9 @@ class ApiCustomerController extends Controller
 
         $store = Store::where('id', $storeid)->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 

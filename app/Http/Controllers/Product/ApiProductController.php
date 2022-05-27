@@ -11,9 +11,18 @@ use Illuminate\Support\Facades\Validator;
 class ApiProductController extends Controller
 {
     public function getAllProductsbyStoreId(Request $request, $store_id) {
+        $validator = Validator::make(['id' => $store_id], [
+            'id' => 'integer|required|exists:stores,id'
+        ]);
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+        
         $store = Store::where('id', $store_id)->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -23,10 +32,20 @@ class ApiProductController extends Controller
     }
 
     public function getProductbyId(Request $request, $id) {
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'integer|required|exists:products'
+        ]);
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
         $product = Product::where('id', $id)->first();
+
         $store = Store::where('id', $product['store_id'])->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 

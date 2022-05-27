@@ -22,7 +22,9 @@ class ApiProductTransactionController extends Controller
 
         $store = Store::where('id', $storeid)->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -51,7 +53,9 @@ class ApiProductTransactionController extends Controller
 
         $store = json_decode(json_encode($store[0]), true);
         
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -63,8 +67,8 @@ class ApiProductTransactionController extends Controller
     }
 
     public function getAllProductTransByProductId(Request $request, $productid) {
-        $validator = Validator::make(['transaction_id' => $productid], [
-            'transaction_id' => 'exists:transactions,id'
+        $validator = Validator::make(['products_id' => $productid], [
+            'products_id' => 'exists:products,id'
         ]);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 422);
@@ -75,7 +79,9 @@ class ApiProductTransactionController extends Controller
                     ->where('products.id', $productid)
                     ->first();
 
-        if (auth()->user()->id != $store['admin_id'] && auth()->user()->id != $store['user_id']) {
+        if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
+            return response(["errors" => "You Are Not Authenticate"], 422);
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -119,6 +125,8 @@ class ApiProductTransactionController extends Controller
         $PT = json_decode(json_encode($PT), true);
 
         foreach ($PT as $p) {
+            $product_transaction = ProductTransaction::where('id', $p['id'])->first();
+            
             $event = false;
             foreach ($obj as $i => $o) {
                 $product = Product::where('id', $o['id'])->first();
@@ -126,33 +134,33 @@ class ApiProductTransactionController extends Controller
                     if ($o['quantity'] == 0) {
 
                         $product['quantity'] += $p['quantity'];
-                        $product->Save();
-
+                        
                         $p['quantity'] = 0;
-                        ProductTransaction::where('product_id', $p['product_id'])->delete();
+                        $product_transaction->delete();
                     } else {
-                        ProductTransaction::where('id', $p['id'])->update(
+                        $product_transaction->update(
                             [
                                 'quantity' => $o['quantity'],
                                 'total' => $o['quantity'] * $p['price']
                             ]
                         );
                         $product['quantity'] -= $o['quantity'] - $p['quantity'];
-                        $product->Save();
                     }
+
+                    $product->save();
 
                     $event = true;
 
                     unset($obj[$i]);
                 }
             }
-            if (!$event) {
-                $tmp = ProductTransaction::where('id', $p['id'])->first();
-                if ($tmp) {
-                    $product['quantity'] += $tmp['quantity'];
-                    $tmp->update(['quantity' => 0, 'total' => 0]);
-                    $tmp->delete();
-                }
+            if (!$event && $product_transaction) {
+                $product = Product::where('id', $product_transaction['product_id'])->first(); 
+                $product['quantity'] += $p['quantity'];
+                $product_transaction->update(['quantity' => 0, 'total' => 0]);
+                $product_transaction->delete();
+                $product_transaction->save();
+                $product->save();
             }
         }
 
@@ -171,6 +179,19 @@ class ApiProductTransactionController extends Controller
             ]);
 
             $product['quantity'] -= $o['quantity'];
+            $product->save();
+        }
+
+        return ['errors' => null, 'status' => 'success'];
+    }
+
+    public function deleteProductTransaction($trans) {
+        $PT = ProductTransaction::where('transaction_id', $trans['id'])->get();
+
+        foreach ($PT as $p) {
+            $product = Product::where('id', $p['product_id'])->first();
+
+            $product['quantity'] += $p['quantity'];
             $product->save();
         }
 
