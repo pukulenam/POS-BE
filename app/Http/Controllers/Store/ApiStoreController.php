@@ -17,7 +17,7 @@ class ApiStoreController extends Controller
             return response(['errors' => $validator->errors()->all()], 422);
         }
 
-        if (auth()->user()->id != $id && auth()->user()->role == 'user') {
+        if (auth()->user()->id != $id && auth()->user()->role == 'cashier') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
         $store = Store::where('user_id', $id)->get();
@@ -53,7 +53,7 @@ class ApiStoreController extends Controller
 
         if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
             return response(["errors" => "You Are Not Authenticate"], 422);
-        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'cashier') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 

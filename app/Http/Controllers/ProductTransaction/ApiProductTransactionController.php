@@ -24,7 +24,7 @@ class ApiProductTransactionController extends Controller
 
         if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
             return response(["errors" => "You Are Not Authenticate"], 422);
-        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'cashier') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -55,7 +55,7 @@ class ApiProductTransactionController extends Controller
         
         if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
             return response(["errors" => "You Are Not Authenticate"], 422);
-        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'cashier') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
@@ -81,7 +81,7 @@ class ApiProductTransactionController extends Controller
 
         if (auth()->user()->id != $store['admin_id'] && auth()->user()->role == 'admin') {
             return response(["errors" => "You Are Not Authenticate"], 422);
-        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'user') {
+        } else if (auth()->user()->id != $store['user_id'] && auth()->user()->role == 'cashier') {
             return response(["errors" => "You Are Not Authenticate"], 422);
         }
 
